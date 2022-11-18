@@ -10,7 +10,7 @@ mu = 10
 servers = {1, 2, 3}
 # Outside arrival rates for servers 1, 2, and 3.
 # The question: what's the max value of r1?
-r = {1: int(sys.argv[1]), 2: 1, 3: 1}
+r = {1: float(sys.argv[1]), 2: 1., 3: 1.}
 # Probability a packet travels from server 1 to 2, or 2 to out.
 p12 = p2out = 0.8
 # Probability a packet travels from server 1 out.
@@ -21,9 +21,9 @@ p23 = p13 = 0.2
 p31 = 1.0
 
 # Number of jobs in each queue, default 0.
-q = defaultdict(int)
+q = defaultdict(float)
 
-assert type(r[1]) == int, "Not ready for reals yet"
+assert type(mu) is int
 assert p12 + p13 + p1out == 1.0
 assert p23 + p2out == 1.0
 assert p31 == 1.0
@@ -37,38 +37,35 @@ def tick():
         # Outside arrivals join each server's queue.
         q[s] += r[s]
 
+    # Each server can take 1 task from its queue, mu times per second.
     for _ in range(mu):
-        q_next = q.copy()
-        if q[1]:
+        if q[1] > 0:
+            q[1] = max(q[1] - 1, 0.0)
             sample = random()
-            q_next[1] -= 1
-            if sample <= p12:
-                q_next[2] += 1
+            if sample < p12:
+                q[2] += 1
             elif sample <= (p12 + p13):
-                q_next[3] += 1
+                q[3] += 1
             else:
-                assert False
+                assert False, "Tasks from server 1 should all go to 2 or 3"
 
-        if q[2]:
+        if q[2] > 0:
+            q[2] = max(q[2] - 1, 0.0)
             sample = random()
-            q_next[2] -= 1
-            if sample <= p23:
-                q_next[3] += 1
+            if sample < p23:
+                q[3] += 1
             elif sample <= p23 + p2out:
                 # Out.
                 pass
             else:
                 assert False
 
-        if q[3]:
-            sample = random()
-            q_next[3] -= 1
-            if sample <= p31:
-                q_next[1] += 1
-            else:
-                assert False
+        if q[3] > 0:
+            q[3] = max(q[3] - 1, 0.0)
+            # We know p31 == 1.0, tasks always go from server 3 to server 1.
+            q[1] += 1
 
-        q = q_next
+        q = q
 
 
 def stable(t):
