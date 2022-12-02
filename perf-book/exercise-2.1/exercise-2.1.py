@@ -1,5 +1,10 @@
 # Exercise 2.1 of Performance Modeling and Design of Computer Systems.
 # See Figure 2.3.
+#
+# Run this like "python3 exercise-2.1.py 5.1999", where 5.1999 is a possible
+# value of r1, i.e. a possible answer to Exercise 2.1. If 5.1999 is a stable
+# value of r1 then this script exits with code 0, otherwise it fails. Try a few
+# values to find the max allowable.
 
 import sys
 from collections import defaultdict
