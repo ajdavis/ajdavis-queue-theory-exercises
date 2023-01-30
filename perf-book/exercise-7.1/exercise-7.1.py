@@ -1,6 +1,3 @@
-from random import random
-
-
 r2 = 10
 mu1 = 1/.1
 mu2 = 1/.05
