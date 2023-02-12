@@ -1,3 +1,5 @@
 ciw
 matplotlib
 simpy
+salabim
+Pillow
