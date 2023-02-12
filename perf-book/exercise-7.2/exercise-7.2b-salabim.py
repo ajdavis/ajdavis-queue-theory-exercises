@@ -1,3 +1,4 @@
+import argparse
 import random
 from typing import Optional
 
@@ -5,7 +6,6 @@ import salabim as sim
 
 MPL = 6  # Multiprogramming level, number of jobs.
 NUM_SERVERS = 2
-SERVER2_SERVICE_RATE = 1.5
 
 
 class Server(sim.Component):
@@ -85,7 +85,9 @@ class Job(sim.Component):
                 # TODO: awful hack.
                 y_from = server_id_to_y_coord(previous_server.server_id)
                 y_to = server_id_to_y_coord(server.server_id)
-                sim.Animate(line0=(540, y_from, 300, y_to), t1=env.now() + 1, keep=False, linecolor0="#ffffffff", linecolor1="#ffffff44")
+                sim.Animate(line0=(540, y_from, 300, y_to), t1=env.now() + 1,
+                            keep=False, linecolor0="#ffffffff",
+                            linecolor1="#ffffff44")
 
             previous_server = server
             yield self.passivate()
@@ -95,20 +97,24 @@ def server_id_to_y_coord(server_id: int):
     return 250 - server_id * 100
 
 
-def main():
-    env = sim.Environment(trace=True)
+def main(server_2_service_rate: float, animate: bool):
+    env = sim.Environment(trace=False)
     servers = [Server(server_id=1, service_duration=3),
-               Server(server_id=2, service_duration=SERVER2_SERVICE_RATE)]
+               Server(server_id=2, service_duration=server_2_service_rate)]
     jobs = [Job(servers=servers) for _ in range(MPL)]
-    servers[0].animate(id="blue", x=500, y=server_id_to_y_coord(1))
-    servers[1].animate(id="red", x=500, y=server_id_to_y_coord(2))
-    env.background_color("20%gray")
     env.modelname("Exercise 7.2b")
     seed = hash("A. Jesse Jiryu Davis") % 2 ** 32
     sim.random_seed(seed)
     random.seed(seed)
-    env.animation_parameters(speed=4, animate=True, x1=600, height=400)
-    env.run(till=100)
+
+    if animate:
+        servers[0].animate(id="blue", x=500, y=server_id_to_y_coord(1))
+        servers[1].animate(id="red", x=500, y=server_id_to_y_coord(2))
+        env.background_color("20%gray")
+        env.animation_parameters(speed=4, animate=True, x1=600, height=400)
+        env.run(till=100)
+    else:
+        env.run(till=100000)
 
     for server in servers:
         server.print_statistics()
@@ -116,4 +122,8 @@ def main():
     print(f"{sum(s.completions for s in servers) / env.now()} jobs/unit time")
 
 
-main()
+parser = argparse.ArgumentParser()
+parser.add_argument("SERVER_2_SERVICE_RATE", type=float)
+parser.add_argument("--animate", action="store_true")
+args = parser.parse_args()
+main(args.SERVER_2_SERVICE_RATE, args.animate)
