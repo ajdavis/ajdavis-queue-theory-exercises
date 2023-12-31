@@ -2,7 +2,7 @@ import random
 
 
 def trial():
-    x, y, i = 0, 0, 0
+    x, y, i = random.randint(0, 7), random.randint(0, 7), 0
     while True:
         if random.randint(0, 1) == 0:
             # Move to a random new x, can't stay at the same x.
